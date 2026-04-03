@@ -61,7 +61,7 @@ export default function WishingSection() {
       <BubbleBackground />
       
       {/* Cinematic Watermark */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-none select-none opacity-[0.03] w-full text-center">
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-none select-none opacity-[0.09] w-full text-center">
         <span className="text-[20vw] font-black uppercase tracking-tighter leading-none text-white whitespace-nowrap">
            Guestbook
         </span>
