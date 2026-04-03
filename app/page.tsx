@@ -99,10 +99,10 @@ export default function Home() {
                      <span className="text-[9px] font-bold tracking-[0.3em] uppercase opacity-30 text-white">Days Left</span>
                   </div>
                   <div className="w-[1px] h-10 bg-white/10" />
-                  <div className="flex flex-col items-center gap-2">
+                  {/* <div className="flex flex-col items-center gap-2">
                      <span className="text-3xl font-bold">45</span>
                      <span className="text-[9px] font-bold tracking-[0.3em] uppercase opacity-30 text-white">Minutes From Airport</span>
-                  </div>
+                  </div> */}
                </div>
             </div>
          </div>
