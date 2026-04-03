@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
-import { useScroll, useTransform, useSpring, motion, AnimatePresence } from "framer-motion";
+import { useTransform, useSpring, motion, AnimatePresence, MotionValue } from "framer-motion";
 
-export default function HeroCanvas() {
+export default function HeroCanvas({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
 
   // Smooth the scroll progress for cinematic frame transitions
   const smoothProgress = useSpring(scrollYProgress, {
@@ -38,30 +33,52 @@ export default function HeroCanvas() {
   useEffect(() => {
     let loadedCount = 0;
     const loadedImages: HTMLImageElement[] = [];
+    let isCancelled = false;
 
-    // Preload images with progress tracking
-    framePaths.forEach((path, i) => {
-      const img = new Image();
-      img.src = path;
-      img.onload = () => {
-        loadedCount++;
-        setLoadProgress(Math.round((loadedCount / frameCount) * 100));
-        if (loadedCount === frameCount) {
-          setIsLoaded(true);
-        }
-      };
-      img.onerror = () => {
-        console.error(`Failed to load frame: ${path}`);
-        loadedCount++; // Still count it to resolve the loader
-      };
-      loadedImages[i] = img;
-    });
+    async function preloadAll() {
+      const BATCH_SIZE = 30; // Load 30 images at a time to stay under browser connection limits
+      
+      for (let i = 0; i < framePaths.length; i += BATCH_SIZE) {
+        if (isCancelled) break;
 
-    setImages(loadedImages);
+        const batch = framePaths.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map((path, index) => {
+          const globalIndex = i + index;
+          return new Promise<void>((resolve) => {
+            const img = new Image();
+            img.src = path;
+            img.onload = () => {
+              if (isCancelled) return resolve();
+              loadedCount++;
+              setLoadProgress(Math.round((loadedCount / frameCount) * 100));
+              if (loadedCount === frameCount) setIsLoaded(true);
+              resolve();
+            };
+            img.onerror = () => {
+              // Simple retry: try one more time if it fails
+              img.onerror = () => {
+                if (isCancelled) return resolve();
+                console.warn(`Final failure loading frame: ${path}`);
+                loadedCount++; // Count it anyway to resolve loader
+                resolve();
+              };
+              img.src = path;
+            };
+            loadedImages[globalIndex] = img;
+          });
+        }));
+      }
+
+      if (!isCancelled) {
+        setImages(loadedImages);
+      }
+    }
+
+    preloadAll();
 
     return () => {
-      // Clear memory references
-      loadedImages.forEach((img) => (img.src = ""));
+      isCancelled = true;
+      loadedImages.forEach((img) => { if (img) img.src = ""; });
     };
   }, [framePaths]);
 
@@ -129,12 +146,12 @@ export default function HeroCanvas() {
   }, [images, frameIndex]);
 
   return (
-    <div ref={containerRef} className="relative h-full w-full">
+    <div className="relative h-full w-full">
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-black">
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label="Cinematic wedding story sequence"
+          aria-label="Jerrin & Jesny wedding story sequence"
           className="block w-full h-full object-cover"
         />
         
@@ -167,7 +184,7 @@ export default function HeroCanvas() {
                 
                 <div className="flex flex-col items-center gap-2">
                   <span className="text-[10px] font-medium tracking-[0.5em] uppercase text-white/40">
-                    A Cinematic Entry
+                    Jerrin & Jesny
                   </span>
                   <span className="text-[9px] font-bold tracking-[0.2em] uppercase text-white/20">
                     {loadProgress}%

@@ -1,10 +1,9 @@
 "use client";
 
-import { useScroll, useTransform, motion } from "framer-motion";
+import { useTransform, motion, MotionValue } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
-export default function HeroTextOverlays() {
-  const { scrollYProgress } = useScroll();
+export default function HeroTextOverlays({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
 
   // SCROLL RANGES: 0 -> 1.0 (over 500vh territory)
   
@@ -25,13 +24,25 @@ export default function HeroTextOverlays() {
   const opacityBR = useTransform(scrollYProgress, [0.55, 0.65, 0.9, 0.98], [0, 1, 1, 0]);
   const yBR = useTransform(scrollYProgress, [0.55, 0.65, 0.9, 0.98], [30, 0, 0, -30]);
 
-  // Transform pointer events based on visibility for the CTA
-  const pointerEventsBR = useTransform(scrollYProgress, (pos) => 
-    pos > 0.55 && pos < 0.98 ? "auto" : "none"
+  // Master visibility: Fade out as we reach the end of the section
+  // With "end start" offset, 1.0 is the moment the section is fully gone.
+  // Since the section is 500vh, the next section begins entering the viewport at 0.8 progress.
+  // We MUST be completely hidden by 0.8 to avoid overlapping with content below.
+  const masterOpacity = useTransform(scrollYProgress, [0, 0.02, 0.7, 0.8], [0, 1, 1, 0]);
+  
+  // Disable pointer events completely when faded out
+  const masterPointerEvents = useTransform(scrollYProgress, (pos) => 
+    pos < 0.8 ? "auto" : "none"
   );
 
   return (
-    <div className="fixed inset-0 z-20 pointer-events-none p-10 md:p-20 flex flex-col justify-between">
+    <motion.div 
+      style={{ 
+        opacity: masterOpacity,
+        pointerEvents: masterPointerEvents as any
+      }}
+      className="fixed inset-0 z-20 pointer-events-none p-10 md:p-20 flex flex-col justify-between"
+    >
       {/* Top Layer */}
       <div className="flex flex-col md:flex-row justify-between items-start gap-10">
         {/* Top-Left: Primary Headline */}
@@ -50,7 +61,7 @@ export default function HeroTextOverlays() {
           style={{ opacity: opacityTR, y: yTR }} 
           className="md:text-right"
         >
-           <div className="flex flex-col gap-1">
+           <div className="flex flex-col gap-1 mt-[40px]">
              <span className="text-[11px] md:text-xs font-bold tracking-[0.5em] uppercase text-white/40">
                 A Love That Began Then
              </span>
@@ -77,11 +88,10 @@ export default function HeroTextOverlays() {
         </motion.div>
 
         {/* Bottom-Right: Primary CTA */}
-        <motion.div 
+        {/* <motion.div 
           style={{ 
             opacity: opacityBR, 
-            y: yBR,
-            pointerEvents: pointerEventsBR as any
+            y: yBR
           }} 
           className="pointer-events-auto"
         >
@@ -91,11 +101,10 @@ export default function HeroTextOverlays() {
               </span>
               <ArrowRight className="relative z-10 text-black scale-110 group-hover:translate-x-2 transition-transform duration-500" />
               
-              {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/[0.05] to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
            </button>
-        </motion.div>
+        </motion.div> */}
       </div>
-    </div>
+    </motion.div>
   );
 }

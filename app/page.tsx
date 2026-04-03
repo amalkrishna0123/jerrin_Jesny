@@ -1,7 +1,11 @@
+"use client";
+
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import WishingSection from "@/components/Wishes/WishingSection";
 import CountdownTimer from "@/components/CountdownTimer";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 
 export default function Home() {
   return (
@@ -18,7 +22,9 @@ export default function Home() {
         Supporting Content: 
         A smooth transition into the invitation details.
       */}
-      <section className="relative z-10 w-full min-h-screen bg-black flex items-center justify-center border-t border-white/5 py-40">
+      <section 
+        className="relative z-10 w-full min-h-screen bg-black flex items-center justify-center border-t border-white/5 py-20"
+      >
          <div className="flex flex-col items-center gap-16 text-center max-w-4xl px-10">
             <div className="flex flex-col items-center gap-4">
               <span className="text-[11px] font-black tracking-[0.6em] uppercase text-white/30">

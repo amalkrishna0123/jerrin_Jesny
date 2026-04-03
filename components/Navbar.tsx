@@ -23,7 +23,7 @@ export default function Navbar() {
 
   useEffect(() => {
     // Background music initialization
-    const audio = new Audio("/audio/hero.mp3");
+    const audio = new Audio("/audio/hero.mpeg");
     audio.loop = true;
     audio.volume = 0;
     audioRef.current = audio;
